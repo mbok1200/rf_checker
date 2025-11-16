@@ -75,7 +75,8 @@ class DynamoDBService:
             if user['password_hash'] == password_hash:
                 return {
                     'username': user['username'],
-                    'created_at': user['created_at']
+                    'created_at': user['created_at'],
+                    'api_key': user['api_key_hash']  # Повертаємо хеш для безпеки
                 }
             
             return None
@@ -83,10 +84,10 @@ class DynamoDBService:
             print(f"DynamoDB error: {str(e)}")
             return None
     
-    def verify_api_key(self, api_key: str) -> Optional[str]:
+    def verify_api_key(self, api_key_hash: str) -> Optional[str]:
         """Перевірити API ключ і повернути username"""
         try:
-            api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()
+            # api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()
             
             # Використати GSI для швидкого пошуку
             response = self.users_table.query(

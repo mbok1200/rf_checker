@@ -35,7 +35,8 @@ async def login(data: LoginRequest):
         return {
             "message": "Login successful",
             "username": user['username'],
-            "created_at": user.get('created_at')
+            "created_at": user.get('created_at'),
+            "api_key": user['api_key']
         }
     raise HTTPException(status_code=401, detail="Invalid credentials")
 
