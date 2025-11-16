@@ -1,0 +1,8 @@
+.env
+__pycache__/
+../__pycache__/
+*.pyc
+.vscode/
+.dbsqlite3
+.db
+.ai_core_state_cache/*

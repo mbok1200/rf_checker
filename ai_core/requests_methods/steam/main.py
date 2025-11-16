@@ -3,7 +3,7 @@ import requests
 class SteamMain:
     def __init__(self):
         pass
-    def search_steam_app_id(game_name: str) -> int | None:
+    def search_steam_app_id(self, game_name: str) -> int | None:
         """
         Шукає гру в Steam і повертає її app_id за назвою.
         """
