@@ -18,7 +18,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   headers.set('Content-Type', 'application/json');
   const apiKey = getApiKey();
   if (apiKey) headers.set('X-API-Key', apiKey);
-  const res = await fetch(url, { ...options, headers });
+  const res = await fetch(`http://backend:8000${url}`, { ...options, headers });
   const text = await res.text();
   try {
     const data = text ? JSON.parse(text) : {};
