@@ -10,5 +10,5 @@ class SecurityConfig:
     }
     SECRET_KEY = os.getenv("JWT_SECRET_KEY", secrets.token_urlsafe(32))
     ALGORITHM = "HS256"
-    ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:000").split(",")
+    ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
     ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")

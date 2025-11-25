@@ -9,7 +9,7 @@ class State(object):
      metadata: dict = {}
      urls: list[str] = []
      def __init__(self):
-        self.cache = dc.Cache(".ai_core_state_cache")
+        self.cache = dc.Cache(".ai_core_state_cache_v1")
      def make_key(self, prompt: str):
           return hashlib.sha256(prompt.encode()).hexdigest()
      def set(self, key: str, value):

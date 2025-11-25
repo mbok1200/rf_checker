@@ -66,7 +66,7 @@ class RFCheckerAPI:
             CORSMiddleware,
             allow_origins=SecurityConfig.ALLOWED_ORIGINS,
             allow_credentials=True,
-            allow_methods=["POST", "GET"],
+            allow_methods=["*"],
             allow_headers=["*"],
         )
         
@@ -88,7 +88,7 @@ class RFCheckerAPI:
     def run(self, host: str = "0.0.0.0", port: int = 8000):
         """Запуск сервера"""
         import uvicorn
-        uvicorn.run(self.app, host=host, port=port)
+        uvicorn.run("backend.main:app", host=host, port=port, reload=True)
 
 # Створення екземплярів для експорту
 api = RFCheckerAPI()

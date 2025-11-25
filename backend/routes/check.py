@@ -27,12 +27,37 @@ async def check_content(
     try:
         ai_core = AICoreMain()
          # Обробка Steam гри
-        if data.game_name and data.game_name is not None:
-            ai_core.steam_process(data.game_name)
-        data.urls.append(ai_core.state.metadata.get("steam_game_info", {}).get("website", ""))
+        if data.game_name:
+            print(f"Processing game: {data.game_name}")
+            try:
+                ai_core.steam_process(data.game_name)
+                print(f"Steam process completed")
+            except Exception as e:
+                print(f"Error in steam_process: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                raise
+            
+            steam_url = ai_core.state.metadata.get("steam_game_info", {}).get("website")
+            # Додаємо URL тільки якщо він не None та не порожній
+            if steam_url:
+                data.urls.append(steam_url)
+        
         # Обробка URLs
-        if data.urls:
-            ai_core.request_handle(data.urls)
+        if len(data.urls) > 0:
+            print(f"Steam URL: {steam_url} {data.urls}")
+            
+            try:
+                ai_core.request_handle(data.urls)
+                print(f"URL processing completed")
+            except Exception as e:
+                print(f"Error in request_handle: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                raise
+            print(f"Steam URL: {ai_core.state.metadata}")
+        print(f"Processing URLs: {ai_core.state.metadata}")
+            
         # Генерація аналізу
         response = ai_core.ai_machines.gemeni_generate_text(ai_core.state.metadata)
         

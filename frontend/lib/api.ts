@@ -1,4 +1,7 @@
 export type Health = { status: string; timestamp: string };
+const PUBLIC_API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window === 'undefined' ? 'http://backend:8000' : 'http://localhost:8000');
 
 export function getApiKey(): string | null {
   if (typeof window === 'undefined') return null;
@@ -18,7 +21,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   headers.set('Content-Type', 'application/json');
   const apiKey = getApiKey();
   if (apiKey) headers.set('X-API-Key', apiKey);
-  const res = await fetch(`http://backend:8000${url}`, { ...options, headers });
+  const res = await fetch(`${PUBLIC_API_URL}${url}`, { ...options, headers });
   const text = await res.text();
   try {
     const data = text ? JSON.parse(text) : {};

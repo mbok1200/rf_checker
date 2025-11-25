@@ -9,6 +9,10 @@ services:
     command: python -m backend.main
     ports:
       - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+      - ./ai_core:/app/ai_core
+    depends_on: []
   frontend:
     build: ./frontend
     environment:
