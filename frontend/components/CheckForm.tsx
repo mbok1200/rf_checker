@@ -1,6 +1,7 @@
 "use client";
 import { useState } from 'react';
 import { api } from '@/lib/api';
+import { AnalysisResult } from './AnalysisResult';
 
 export function CheckForm() {
   const [urlsText, setUrlsText] = useState('');
@@ -26,18 +27,65 @@ export function CheckForm() {
   };
 
   return (
-    <div className="card">
+    <div className="check-form">
       <h3>Перевірка контенту</h3>
-      <textarea placeholder="URL по одному на рядок" rows={6} value={urlsText} onChange={e => setUrlsText(e.target.value)} />
-      <input placeholder="Назва гри (Steam, опціонально)" value={gameName} onChange={e => setGameName(e.target.value)} />
-      <button disabled={loading} onClick={submit}>Перевірити</button>
+      <textarea 
+        placeholder="URL по одному на рядок" 
+        rows={6} 
+        value={urlsText} 
+        onChange={e => setUrlsText(e.target.value)} 
+      />
+      <input 
+        placeholder="Назва гри (Steam, опціонально)" 
+        value={gameName} 
+        onChange={e => setGameName(e.target.value)} 
+      />
+      <button disabled={loading} onClick={submit}>
+        {loading ? 'Перевірка...' : 'Перевірити'}
+      </button>
+      
       {error && <div className="error">{error}</div>}
-      {result && (
-        <div className="result">
-          <h4>Результат</h4>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
-        </div>
-      )}
+      {result && <AnalysisResult data={result} />}
+      
+      <style jsx>{`
+        .check-form {
+          max-width: 900px;
+          margin: 0 auto;
+        }
+        textarea, input {
+          width: 100%;
+          margin-bottom: 1rem;
+          padding: 0.75rem;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-family: inherit;
+        }
+        textarea {
+          font-family: monospace;
+          resize: vertical;
+        }
+        button {
+          width: 100%;
+          padding: 0.75rem;
+          background: #0070f3;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 1rem;
+        }
+        button:disabled {
+          background: #969494ff;
+          cursor: not-allowed;
+        }
+        .error {
+          padding: 1rem;
+          background: rgba(196, 195, 195, 1);
+          color: #c00;
+          border-radius: 4px;
+          margin-top: 1rem;
+        }
+      `}</style>
     </div>
   );
 }
