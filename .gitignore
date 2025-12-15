@@ -1,5 +1,6 @@
-cloudflared/*
-!cloudflared/config.yml
+cloudflared/*.json
+cloudflared/*.pem
+.cloudflared/config.yml
 .env
 __pycache__/
 ../__pycache__/
