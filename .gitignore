@@ -5,4 +5,6 @@ __pycache__/
 .vscode/
 .dbsqlite3
 .db
-.ai_core_state_cache/*
+.ai_core_state_cache/*cloudflared/*.json
+./cloudflared/*
+!./cloudflared/config.yml

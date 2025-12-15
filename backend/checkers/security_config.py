@@ -10,5 +10,5 @@ class SecurityConfig:
     }
     SECRET_KEY = os.getenv("JWT_SECRET_KEY", secrets.token_urlsafe(32))
     ALGORITHM = "HS256"
-    ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
-    ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,https://ai_app.workerinua.fun").split(",")
+    ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0,rf_checker_backend_1,ai_api.workerinua.fun,ai_app.workerinua.fun").split(",")

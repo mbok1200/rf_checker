@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 import pathlib
 import sys
+from botocore.exceptions import ClientError
 
 # Завантажити .env
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
@@ -16,6 +17,99 @@ def get_dynamodb_client():
         aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
         aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
     )
+
+def init_tables():
+    """Ініціалізація всіх таблиць DynamoDB (безпечно, без перетирання)"""
+    dynamodb = get_dynamodb_client()
+
+    tables = [
+        {
+            'TableName': 'rf_checker_users',
+            'KeySchema': [
+                {'AttributeName': 'username', 'KeyType': 'HASH'}
+            ],
+            'AttributeDefinitions': [
+                {'AttributeName': 'username', 'AttributeType': 'S'},
+                {'AttributeName': 'api_key_hash', 'AttributeType': 'S'},
+                {'AttributeName': 'user_id', 'AttributeType': 'S'},
+                {'AttributeName': 'isAdmin', 'AttributeType': 'N'}
+            ],
+            'GlobalSecondaryIndexes': [
+                {
+                    'IndexName': 'api_key_index',
+                    'KeySchema': [
+                        {'AttributeName': 'api_key_hash', 'KeyType': 'HASH'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                },
+                {
+                    'IndexName': 'user_id_index',
+                    'KeySchema': [
+                        {'AttributeName': 'user_id', 'KeyType': 'HASH'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                }
+            ],
+            'ProvisionedThroughput': {
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        },
+        {
+            'TableName': 'rf_checker_user_limits',
+            'KeySchema': [
+                {'AttributeName': 'user_id', 'KeyType': 'HASH'}
+            ],
+            'AttributeDefinitions': [
+                {'AttributeName': 'user_id', 'AttributeType': 'S'}
+            ],
+            'ProvisionedThroughput': {
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        },
+        {
+            'TableName': 'rf_checker_checks',
+            'KeySchema': [
+                {'AttributeName': 'user_id', 'KeyType': 'HASH'},
+                {'AttributeName': 'timestamp', 'KeyType': 'RANGE'}
+            ],
+            'AttributeDefinitions': [
+                {'AttributeName': 'user_id', 'AttributeType': 'S'},
+                {'AttributeName': 'timestamp', 'AttributeType': 'S'}
+            ],
+            'ProvisionedThroughput': {
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        }
+    ]
+
+    for table_config in tables:
+        table_name = table_config['TableName']
+        try:
+            # Спробувати створити таблицю
+            dynamodb.create_table(**table_config)
+            print(f"✅ Created table: {table_name}")
+            
+            # Почекати поки таблиця створюється
+            waiter = dynamodb.get_waiter('table_exists')
+            waiter.wait(TableName=table_name)
+            
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ResourceInUseException':
+                print(f"⚠️  Table {table_name} already exists - skipping")
+            else:
+                print(f"❌ Error creating {table_name}: {e}")
+                raise
 
 def create_users_table():
     """Створити таблицю користувачів в DynamoDB"""
@@ -126,6 +220,24 @@ def recreate_users_table():
     # Створити нову
     create_users_table()
 
+def delete_all_tables():
+    """Видалити всі таблиці"""
+    dynamodb = get_dynamodb_client()
+    tables = ['rf_checker_users', 'rf_checker_user_limits', 'rf_checker_checks']
+    
+    for table_name in tables:
+        try:
+            dynamodb.delete_table(TableName=table_name)
+            print(f"⏳ Deleting {table_name}...")
+            waiter = dynamodb.get_waiter('table_not_exists')
+            waiter.wait(TableName=table_name)
+            print(f"✅ Deleted {table_name}")
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ResourceNotFoundException':
+                print(f"⚠️  Table {table_name} doesn't exist")
+            else:
+                print(f"❌ Error deleting {table_name}: {e}")
+
 def list_tables():
     """Показати всі таблиці"""
     dynamodb = get_dynamodb_client()
@@ -181,7 +293,8 @@ def show_menu():
     print("3. Пересоздати таблицю (видалити + створити)")
     print("4. Показати список всіх таблиць")
     print("5. Показати інформацію про таблицю")
-    print("6. Вихід")
+    print("6. Ініціалізувати всі таблиці")
+    print("7. Вихід")
     print("="*50)
 
 if __name__ == "__main__":
@@ -204,34 +317,32 @@ if __name__ == "__main__":
             list_tables()
         elif command == 'info':
             show_table_info()
+        elif command == 'init':
+            print("🚀 Initializing DynamoDB tables...")
+            init_tables()
+            print("✅ Done!")
+        elif command == 'delete_all':
+            print("🔥 Deleting all tables...")
+            delete_all_tables()
+            print("✅ Done!")
+        elif command == 'recreate_all':
+            print("🔄 Recreating tables...")
+            delete_all_tables()
+            init_tables()
+            print("✅ Done!")
         else:
             print(f"❌ Невідома команда: {command}")
             print("\nДоступні команди:")
-            print("  create   - створити таблицю")
-            print("  delete   - видалити таблицю")
-            print("  recreate - пересоздати таблицю")
-            print("  list     - список таблиць")
-            print("  info     - інформація про таблицю")
+            print("  create     - створити таблицю користувачів")
+            print("  delete     - видалити таблицю користувачів")
+            print("  recreate   - пересоздати таблицю користувачів")
+            print("  list       - список таблиць")
+            print("  info       - інформація про таблицю")
+            print("  init       - ініціалізувати всі таблиці")
+            print("  delete_all - видалити всі таблиці")
+            print("  recreate_all- пересоздати всі таблиці")
     else:
-        # Інтерактивний режим
-        while True:
-            show_menu()
-            choice = input("\nВиберіть опцію (1-6): ").strip()
-            
-            if choice == '1':
-                create_users_table()
-            elif choice == '2':
-                delete_users_table()
-            elif choice == '3':
-                recreate_users_table()
-            elif choice == '4':
-                list_tables()
-            elif choice == '5':
-                show_table_info()
-            elif choice == '6':
-                print("👋 До побачення!")
-                break
-            else:
-                print("❌ Невірний вибір! Спробуйте ще раз.")
-            
-            input("\nНатисніть Enter для продовження...")
+        # Якщо без аргументів - ініціалізувати всі таблиці
+        print("🚀 Initializing DynamoDB tables...")
+        init_tables()
+        print("✅ Done!")

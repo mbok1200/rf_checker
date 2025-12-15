@@ -29,7 +29,8 @@ class AIMachinesMain:
     def _format_metadata(self, metadata: dict) -> str:
         """Format metadata dictionary into readable text"""
         lines = []
-        
+        if "text" in metadata:
+            lines.append(f"Text: {metadata['text']}")
         if "game_name" in metadata:
             lines.append(f"Game: {metadata['game_name']}")
         

@@ -7,11 +7,12 @@
     "activeTab",
     "storage",
     "contextMenus",
-    "notifications"
+    "notifications",
+    "scripting"
   ],
   "host_permissions": [
-    "http://localhost:8000/*",
-    "https://*/*"
+    "https://*/*",
+    "http://*/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -31,9 +32,9 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["https://*/*", "http://*/*"],
       "js": ["content.js"],
-      "css": ["content.css"]
+      "run_at": "document_idle"
     }
   ]
 }

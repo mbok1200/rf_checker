@@ -21,3 +21,16 @@ services:
     command: npm run build && npm start
     depends_on:
       - backend
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    env_file:
+      - .env
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      # Якщо працюєте через credentials JSON:
+      # - ./cloudflared/${CLOUDFLARE_TUNNEL_ID}.json:/etc/cloudflared/${CLOUDFLARE_TUNNEL_ID}.json:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped

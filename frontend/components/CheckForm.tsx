@@ -15,6 +15,8 @@ export function CheckForm() {
     try {
       const urls = urlsText.split('\n').map(s => s.trim()).filter(Boolean);
       const payload: any = {};
+      const userId = localStorage.getItem('userId');
+      if (userId) payload.user_id = userId;
       if (urls.length) payload.urls = urls;
       if (gameName.trim()) payload.game_name = gameName.trim();
       const res = await api.check(payload);

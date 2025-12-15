@@ -16,6 +16,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from fastapi.responses import JSONResponse
 
 from .checkers.security_config import SecurityConfig
 from .services.dynamodb import DynamoDBService
@@ -93,6 +94,10 @@ class RFCheckerAPI:
 # Створення екземплярів для експорту
 api = RFCheckerAPI()
 app = api.app
+
+@api.app.get("/")
+async def root():
+    return JSONResponse({"status": "ok", "message": "RF Checker API"})
 
 if __name__ == "__main__":
     api.run()

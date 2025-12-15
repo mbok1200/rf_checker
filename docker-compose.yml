@@ -6,17 +6,23 @@ services:
       dockerfile: backend/Dockerfile
     environment:
       - ENV=dev
+    env_file:
+      - .env
     command: python -m backend.main
     ports:
-      - "8000:8000"
+      - "8008:8000"
     volumes:
       - ./backend:/app/backend
       - ./ai_core:/app/ai_core
     depends_on: []
+    networks:
+      - appnet
   frontend:
     build: ./frontend
     environment:
       - ENV=dev
+    env_file:
+      - .env
     ports:
       - "3000:3000"
     volumes:
@@ -26,3 +32,26 @@ services:
     command: npm run dev
     depends_on:
       - backend
+    networks:
+      - appnet
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    environment:
+      - ENV=dev
+    env_file:
+      - .env
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared:/etc/cloudflared:ro
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    name: appnet
+    driver: bridge

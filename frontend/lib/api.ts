@@ -1,8 +1,8 @@
 export type Health = { status: string; timestamp: string };
 const PUBLIC_API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window === 'undefined' ? 'http://backend:8000' : 'http://localhost:8000');
-
+  (typeof window === 'undefined' ? 'http://rf_checker_backend_1:8000' : 'https://ai_app.workerinua.fun');
+console.log(PUBLIC_API_URL)
 export function getApiKey(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('apiKey');
@@ -10,6 +10,10 @@ export function getApiKey(): string | null {
 export function setApiKey(key: string) {
   if (typeof window === 'undefined') return;
   localStorage.setItem('apiKey', key);
+}
+export function setUserId(key: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('userId', key);
 }
 export function clearApiKey() {
   if (typeof window === 'undefined') return;
@@ -36,12 +40,12 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
 export const api = {
   health: () => request<Health>('/health'),
   register: (username: string, password: string) =>
-    request<{ message: string; username: string; api_key: string }>(
+    request<{ message: string; username: string; user_id: string; api_key: string }>(
       '/api/auth/register',
       { method: 'POST', body: JSON.stringify({ username, password }) }
     ),
   login: (username: string, password: string) =>
-    request<{ message: string; username: string; api_key: string }>(
+    request<{ message: string; username: string; user_id: string; api_key: string }>(
       '/api/auth/login',
       { method: 'POST', body: JSON.stringify({ username, password }) }
     ),

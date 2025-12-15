@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { api, setApiKey } from '@/lib/api';
+import { api, setApiKey, setUserId } from '@/lib/api';
 
 export const LoginForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const [username, setU] = useState('');
@@ -15,7 +15,10 @@ export const LoginForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     try {
       const res = await api.login(username, password);
       alert(`Успішний вхід! API Key: ${res.api_key}`);
+      setUserId(res.user_id);
+      setApiKey(res.api_key);
       onSuccess?.();
+      location.reload();
     } catch (err: any) {
       setE(err.message);
     } finally {
@@ -71,7 +74,10 @@ export const RegisterForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     try {
       const res = await api.register(username, password);
       alert(`Реєстрація успішна! API Key: ${res.api_key}`);
+      setApiKey(res.api_key);
+      localStorage.setItem('apiKey', res.api_key);
       onSuccess?.();
+      location.reload();
     } catch (err: any) {
       setE(err.message);
     } finally {

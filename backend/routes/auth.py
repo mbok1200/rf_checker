@@ -35,6 +35,7 @@ async def login(data: LoginRequest):
         return {
             "message": "Login successful",
             "username": user['username'],
+            "user_id": user['user_id'],
             "created_at": user.get('created_at'),
             "api_key": user['api_key']
         }
@@ -55,6 +56,7 @@ async def register(data: RegisterRequest):
         return {
             "message": "User created successfully",
             "username": result['username'],
+            "user_id": result['user_id'],
             "api_key": result['api_key']  # Показати тільки раз!
         }
     except ValueError as e:

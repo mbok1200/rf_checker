@@ -1,0 +1,7 @@
+cloudflared/*.json
+.cloudflared
+**/__pycache__/
+frontend/.next
+frontend/node_modules
+node_modules
+.git

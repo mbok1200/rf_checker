@@ -2,10 +2,12 @@ from pydantic import BaseModel, field_validator, Field, model_validator
 class CheckRequest(BaseModel):
     urls: list[str] = Field(default=[], max_items=10)  # Макс 10 URL
     game_name: str | None = Field(None, max_length=500)
+    text: str | None = Field(None, max_length=2000)
+    user_id: str = Field(..., description="Унікальний ID користувача з розширення")
     @model_validator(mode='after')
     def check_at_least_one_field(self):
-        if not self.urls and not self.game_name:
-            raise ValueError('At least one of "urls" or "game_name" must be provided')
+        if not self.urls and not self.game_name and not self.text:
+            raise ValueError('At least one of "urls", "game_name" or "text" must be provided')
         return self
     @field_validator('urls')
     def validate_urls(cls, v):
@@ -24,4 +26,11 @@ class CheckRequest(BaseModel):
                         'union select', 'drop table', '--', ';--']
         if v and any(x in v.lower() for x in dangerous):
             raise ValueError('Invalid game name')
+        return v
+    @field_validator('text')
+    def validate_text(cls, v):
+        dangerous = ['<script', '</script', 'javascript:', 'onerror=', 
+                        'union select', 'drop table', '--', ';--']
+        if v and any(x in v.lower() for x in dangerous):
+            raise ValueError('Invalid text content')
         return v
