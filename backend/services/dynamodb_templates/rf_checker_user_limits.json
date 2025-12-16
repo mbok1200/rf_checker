@@ -1,0 +1,13 @@
+{
+  "TableName": "rf_checker_user_limits",
+  "KeyField": "user_id",
+  "Fields": {
+    "user_id":        { "Type": "S", "Default": null },
+    "limit_type":     { "Type": "S", "Default": "default" },
+    "limit_value":    { "Type": "S", "Default": "10" },
+    "expires_at":     { "Type": "S", "Default": null },
+    "expires_to":     { "Type": "S", "Default": null },
+    "createdAt":      { "Type": "S", "Default": null },
+    "updatedAt":      { "Type": "S", "Default": null }
+  }
+}

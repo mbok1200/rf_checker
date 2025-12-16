@@ -6,6 +6,7 @@ from datetime import datetime
 import os
 import hashlib
 import secrets
+import importlib
 
 class DynamoDBService:
     """Сервіс для роботи з користувачами та API ключами"""
@@ -21,7 +22,18 @@ class DynamoDBService:
         self.user_limits_table = self.dynamodb.Table('rf_checker_user_limits')
         self.checks_table = self.dynamodb.Table('rf_checker_checks')
         self._tables_verified = False
-    
+
+        # --- Додаємо автоматичну синхронізацію полів ---
+        self._sync_table_fields()
+
+    def _sync_table_fields(self):
+        """Синхронізувати всі таблиці з шаблонами (оновити поля)"""
+        try:
+            init_dynamodb = importlib.import_module("backend.services.init_dynamodb")
+            init_dynamodb.sync_all_tables_from_templates()
+        except Exception as e:
+            print(f"⚠️  Не вдалося синхронізувати поля таблиць: {e}")
+
     def _verify_tables_exist(self):
         """Перевірити що таблиці існують"""
         if self._tables_verified:
@@ -38,6 +50,8 @@ class DynamoDBService:
                 from backend.services.init_dynamodb import init_tables
                 init_tables()
                 self._tables_verified = True
+                # Після створення таблиць — одразу оновити поля
+                self._sync_table_fields()
             else:
                 raise
     

@@ -1,0 +1,13 @@
+{
+  "TableName": "rf_checker_users",
+  "KeyField": "username",
+  "Fields": {
+    "username": {"Type": "S", "Default": null},
+    "api_key_hash": {"Type": "S", "Default": null},
+    "user_id": {"Type": "S", "Default": null},
+    "isAdmin": {"Type": "N", "Default": 0},
+    "isActive": {"Type": "N", "Default": 1},
+    "createdAt": {"Type": "S", "Default": null},
+    "updatedAt": {"Type": "S", "Default": null}
+  }
+}

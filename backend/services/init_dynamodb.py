@@ -4,10 +4,12 @@ from dotenv import load_dotenv
 import pathlib
 import sys
 from botocore.exceptions import ClientError
+import json
 
 # Завантажити .env
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 load_dotenv(dotenv_path=ROOT / ".env")
+TEMPLATE_DIR = os.path.join(ROOT, "backend/services/dynamodb_templates")
 
 def get_dynamodb_client():
     """Отримати DynamoDB клієнт"""
@@ -31,8 +33,7 @@ def init_tables():
             'AttributeDefinitions': [
                 {'AttributeName': 'username', 'AttributeType': 'S'},
                 {'AttributeName': 'api_key_hash', 'AttributeType': 'S'},
-                {'AttributeName': 'user_id', 'AttributeType': 'S'},
-                {'AttributeName': 'isAdmin', 'AttributeType': 'N'}
+                {'AttributeName': 'user_id', 'AttributeType': 'S'}
             ],
             'GlobalSecondaryIndexes': [
                 {
@@ -297,6 +298,75 @@ def show_menu():
     print("7. Вихід")
     print("="*50)
 
+def add_field_to_all_items(
+    table_name,
+    key_field,
+    new_field,
+    default_value,
+    region_name='us-east-1'
+):
+    """
+    Додає новий атрибут до всіх записів у таблиці DynamoDB, якщо його ще немає.
+    :param table_name: Назва таблиці
+    :param key_field: Назва ключового поля (partition key)
+    :param new_field: Назва нового поля
+    :param default_value: Значення за замовчуванням для нового поля
+    :param region_name: Регіон AWS
+    """
+    dynamodb = boto3.resource('dynamodb', region_name=region_name)
+    table = dynamodb.Table(table_name)
+
+    # Скануємо всі записи
+    response = table.scan()
+    items = response.get('Items', [])
+
+    for item in items:
+        if new_field not in item:
+            key = {key_field: item[key_field]}
+            print(f"Додаємо поле '{new_field}' до {key}")
+            table.update_item(
+                Key=key,
+                UpdateExpression=f"SET {new_field} = :val",
+                ExpressionAttributeValues={':val': default_value}
+            )
+        else:
+            print(f"Поле '{new_field}' вже існує у {item[key_field]}")
+
+    print("✅ Оновлення завершено.")
+
+def load_table_templates():
+    templates = {}
+    for fname in os.listdir(TEMPLATE_DIR):
+        if fname.endswith('.json'):
+            with open(os.path.join(TEMPLATE_DIR, fname), 'r') as f:
+                tpl = json.load(f)
+                templates[tpl['TableName']] = tpl
+    return templates
+
+def sync_table_fields_from_template(table_name):
+    templates = load_table_templates()
+    tpl = templates.get(table_name)
+    if not tpl:
+        print(f"❌ No template for table {table_name}")
+        return
+    key_field = tpl['KeyField']
+    for field, meta in tpl['Fields'].items():
+        default = meta.get('Default')
+        add_field_to_all_items(table_name, key_field, field, default)
+
+def sync_all_tables_from_templates():
+    """
+    Синхронізує всі таблиці DynamoDB згідно з усіма шаблонами у папці dynamodb_templates.
+    """
+    templates = load_table_templates()
+    for table_name in templates:
+        print(f"🔄 Синхронізуємо таблицю: {table_name}")
+        sync_table_fields_from_template(table_name)
+    print("✅ Всі таблиці синхронізовано з шаблонами.")
+
+# Приклад використання:
+# add_field_to_all_items('rf_checker_users', 'username', 'isActive', 1)
+
 if __name__ == "__main__":
     # Перевірка змінних середовища
     if not os.getenv('AWS_ACCESS_KEY_ID') or not os.getenv('AWS_SECRET_ACCESS_KEY'):
@@ -330,6 +400,10 @@ if __name__ == "__main__":
             delete_all_tables()
             init_tables()
             print("✅ Done!")
+        elif command == 'sync_all':
+            print("🔄 Sync all tables from templates...")
+            sync_all_tables_from_templates()
+            print("✅ Done!")
         else:
             print(f"❌ Невідома команда: {command}")
             print("\nДоступні команди:")
@@ -341,6 +415,7 @@ if __name__ == "__main__":
             print("  init       - ініціалізувати всі таблиці")
             print("  delete_all - видалити всі таблиці")
             print("  recreate_all- пересоздати всі таблиці")
+            print("  sync_all   - синхронізувати всі таблиці з шаблонами")
     else:
         # Якщо без аргументів - ініціалізувати всі таблиці
         print("🚀 Initializing DynamoDB tables...")

@@ -1,0 +1,16 @@
+{
+  "TableName": "rf_checker_checks",
+  "KeyField": "user_id",
+  "SortKeyField": "timestamp",
+  "Fields": {
+    "user_id":        { "Type": "S", "Default": null },
+    "timestamp":      { "Type": "S", "Default": null },
+    "check_type":     { "Type": "S", "Default": null },
+    "result":         { "Type": "S", "Default": null },
+    "provider":       { "Type": "S", "Default": null },
+    "game_name":      { "Type": "S", "Default": null },
+    "urls_checked":   { "Type": "S", "Default": null },
+    "text_length":    { "Type": "N", "Default": 0 },
+    "steam_info":     { "Type": "S", "Default": null }
+  }
+}

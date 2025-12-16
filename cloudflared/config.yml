@@ -2,7 +2,7 @@ tunnel: c813cbe6-0797-41eb-a001-69015f2caab3
 credentials-file: /etc/cloudflared/c813cbe6-0797-41eb-a001-69015f2caab3.json
 ingress:
   - hostname: ai_app.workerinua.fun
-    service: http://frontend:3000
+    service: http://rf_checker_frontend_1:3000
   - hostname: ai_api.workerinua.fun
-    service: http://backend:8000
+    service: http://rf_checker_backend_1:8000
   - service: http_status:404
